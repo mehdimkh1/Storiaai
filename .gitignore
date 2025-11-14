@@ -1,0 +1,42 @@
+# Environments
+.env
+.venv
+venv/
+env/
+ENV/
+env.bak
+venv.bak
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database files
+*.db
+*.sqlite3
+*.sqlite3-journal
+
+# IDE settings
+.vscode/
+.idea/
+.spyderproject
+.spyproject
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+*.egg-info/
+*.egg
+
+# Test & coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+*.log
+pip-log.txt

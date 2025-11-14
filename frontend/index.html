@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoriaAI - Storie Magiche per Bambini ✨</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+</head>
+<body>
+    <!-- 3D Animated Background -->
+    <div id="vanta-bg"></div>
+    
+    <!-- Magical Particles -->
+    <div class="stars"></div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header with 3D Title -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="magic-wand">✨</div>
+                <h1 class="title-3d">
+                    <span class="letter">S</span>
+                    <span class="letter">t</span>
+                    <span class="letter">o</span>
+                    <span class="letter">r</span>
+                    <span class="letter">i</span>
+                    <span class="letter">a</span>
+                    <span class="letter glow">A</span>
+                    <span class="letter glow">I</span>
+                </h1>
+                <div class="magic-wand">✨</div>
+            </div>
+            <p class="subtitle">Crea storie magiche personalizzate per i tuoi bambini</p>
+        </header>
+
+        <!-- Story Creator Card -->
+        <div class="creator-card glass-effect">
+            <div class="card-glow"></div>
+            
+            <!-- Input Form -->
+            <form id="story-form" class="story-form">
+                <div class="form-group floating-label">
+                    <input type="email" id="parent-email" required>
+                    <label for="parent-email">📧 Email Genitore</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input type="text" id="child-name" required>
+                    <label for="child-name">🧒 Nome del Bambino</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input type="number" id="child-age" min="2" max="12" required>
+                    <label for="child-age">🎂 Età (2-12 anni)</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input type="text" id="child-mood" required>
+                    <label for="child-mood">😊 Umore (es: felice, curioso, avventuroso)</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <select id="language" required style="padding: 1.25rem 1rem 0.75rem; font-size: 1rem; color: white; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 15px; width: 100%; outline: none;">
+                        <option value="it">🇮🇹 Italiano</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="ar">🇸🇦 العربية (Arabic)</option>
+                    </select>
+                    <label for="language">🌍 Lingua / Language</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <select id="voice" style="padding: 1.25rem 1rem 0.75rem; font-size: 1rem; color: white; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 15px; width: 100%; outline: none;"></select>
+                    <label for="voice">🎤 Voce Narrante</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input type="text" id="child-interests" placeholder="draghi, unicorni, spazio...">
+                    <label for="child-interests">🌟 Interessi (separati da virgola)</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <!-- Controls Section -->
+                <div class="controls-section">
+                    <h3 class="section-title">⚙️ Impostazioni Storia</h3>
+                    <div class="toggle-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="no-scary" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">🛡️ Niente Scene Spaventose</span>
+                        </label>
+                        
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="kindness" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">💝 Lezione di Gentilezza</span>
+                        </label>
+                        
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="italian-focus" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">🇮🇹 Focus Italiano</span>
+                        </label>
+                        
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="educational">
+                            <span class="slider"></span>
+                            <span class="toggle-label">📚 Contenuto Educativo</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button type="submit" class="generate-btn" id="generate-btn">
+                    <span class="btn-text">✨ Crea Storia Magica</span>
+                    <div class="btn-particles"></div>
+                </button>
+
+                <div class="quota-info" id="quota-info">
+                    <span class="quota-text">🎁 Storie gratuite oggi: <span id="quota-count">3</span>/3</span>
+                </div>
+            </form>
+
+            <!-- Loading Animation -->
+            <div class="loading-container" id="loading" style="display: none;">
+                <div class="magic-book">
+                    <div class="book-page"></div>
+                    <div class="book-page"></div>
+                    <div class="book-page"></div>
+                </div>
+                <p class="loading-text">Sto creando una storia magica...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Display Card -->
+        <div class="story-card glass-effect" id="story-card" style="display: none;">
+            <div class="story-header">
+                <h2 class="story-title" id="story-title"></h2>
+                <button class="close-btn" id="close-story">✕</button>
+            </div>
+            
+            <div class="story-content" id="story-content">
+                <!-- Story will be injected here -->
+            </div>
+
+            <div class="audio-player" id="audio-player" style="display: none;">
+                <h3>🎧 Ascolta la storia</h3>
+                <audio controls id="story-audio"></audio>
+                <p class="voice-info" id="voice-info"></p>
+            </div>
+
+            <div class="story-actions">
+                <button class="action-btn" id="read-again">🔄 Rileggi</button>
+                <button class="action-btn" id="create-new">✨ Nuova Storia</button>
+                <button class="action-btn" id="download-story">💾 Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div class="toast error-toast" id="error-toast">
+        <span class="toast-icon">⚠️</span>
+        <span class="toast-message" id="toast-message"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
