@@ -54,6 +54,26 @@ class StoryGenerationRequest(BaseModel):
     sequel: bool = Field(default=False)
     previous_story_id: Optional[str] = None
     voice: Optional[str] = Field(default=None, max_length=80)
+    # New optional stylistic controls
+    style: Optional[str] = Field(
+        default=None,
+        description="Narrative style e.g. 'fiaba classica', 'avventura', 'fantascienza', 'umoristica'",
+        max_length=40,
+    )
+    tone: Optional[str] = Field(
+        default=None,
+        description="Desired emotional tone e.g. 'calmo', 'gioioso', 'riflessivo'",
+        max_length=30,
+    )
+    educational_topic: Optional[str] = Field(
+        default=None,
+        description="Specific educational topic to weave lightly (e.g. 'sistema solare')",
+        max_length=60,
+    )
+    generate_panels: bool = Field(
+        default=False,
+        description="If true, backend will derive structured panel prompts for illustration",
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -114,6 +134,15 @@ class StoryPayload(BaseModel):
     resolution: str
     moral_summary: str
     suggested_sequel_hook: Optional[str] = None
+    # Optional illustration panel prompts (simple textual guidance)
+    panel_prompts: List[str] = Field(default_factory=list)
+
+
+class MemorySnapshot(BaseModel):
+    characters: List[str] = Field(default_factory=list)
+    moral: Optional[str] = None
+    unresolved_threads: List[str] = Field(default_factory=list)
+    sequel_hook: Optional[str] = None
 
 
 class StoryResponse(BaseModel):
@@ -124,6 +153,7 @@ class StoryResponse(BaseModel):
     story: StoryPayload
     created_at: dt.datetime
     voice: Optional[str] = None
+    memory_snapshot: Optional[MemorySnapshot] = None
 
 
 class StorySummaryRequest(BaseModel):

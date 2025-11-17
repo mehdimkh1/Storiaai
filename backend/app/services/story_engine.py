@@ -69,6 +69,9 @@ def build_story_prompt(request: StoryGenerationRequest, previous_summary: Option
         "- Inserisci una lezione di gentilezza." if controls.kindness_lesson else "- Morale positiva generale.",
         "- Richiama folklore italiano (Pinocchio, fiabe regionali)." if controls.italian_focus else "- Inserisci elementi fantasy universali.",
         "- Aggiungi curiosità educative in modo leggero." if controls.educational else "",
+        f"- Stile narrativo: {request.style}." if request.style else "",
+        f"- Tono emotivo complessivo: {request.tone}." if request.tone else "",
+        f"- Integra delicatamente il tema educativo: {request.educational_topic}." if request.educational_topic else "",
     ]
 
     if previous_summary:
@@ -423,8 +426,29 @@ def _synthesize_audio_murf(client: httpx.Client, text: str, language: str) -> Op
     return f"data:audio/mp3;base64,{audio_base64}"
 
 
+def _derive_panel_prompts(story: StoryPayload, language: str) -> list[str]:
+    """Create lightweight illustration panel prompts from story sections.
+
+    We keep this deterministic and free (no extra model calls). Each prompt is
+    a concise visual description in the target language.
+    """
+
+    panels: list[str] = []
+    base_lang_prefix = "Illustrazione:" if language == "it" else "Illustration:"  # minimal i18n
+    panels.append(f"{base_lang_prefix} scena introduttiva: {story.intro[:140]}")
+    panels.append(f"{base_lang_prefix} svolgimento scelta 1: {story.branch_1[:140]}")
+    panels.append(f"{base_lang_prefix} svolgimento scelta 2: {story.branch_2[:140]}")
+    panels.append(f"{base_lang_prefix} risoluzione serena: {story.resolution[:140]}")
+    panels.append(f"{base_lang_prefix} morale: {story.moral_summary[:140]}")
+    # Trim whitespace
+    return [p.strip() for p in panels]
+
+
 def generate_story(request: StoryGenerationRequest, previous_summary: Optional[str]) -> StoryPayload:
-    """High-level orchestration to build and sanitize a story payload."""
+    """High-level orchestration to build and sanitize a story payload.
+
+    Adds optional panel prompt derivation when request.generate_panels is true.
+    """
 
     prompt = build_story_prompt(request, previous_summary)
     provider = get_llm_provider()
@@ -435,6 +459,13 @@ def generate_story(request: StoryGenerationRequest, previous_summary: Optional[s
     else:
         story = _call_openai_story(prompt)
     sanitized_story = sanitize_story_text(story, request.controls)
+
+    # If provider returned without panel_prompts and generation requested, derive locally.
+    if request.generate_panels and not sanitized_story.panel_prompts:
+        derived = _derive_panel_prompts(sanitized_story, request.language)
+        merged = sanitized_story.model_dump()
+        merged["panel_prompts"] = derived
+        sanitized_story = StoryPayload(**merged)
     return sanitized_story
 
 

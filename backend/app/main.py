@@ -13,10 +13,11 @@ from sqlalchemy.orm import Session
 from .auth import security
 from .config import get_settings
 from .database import get_db, init_db
-from .models import ConsentLog, Story, StoryState, UsageMetric
+from .models import ConsentLog, Story, StoryState, UsageMetric, ChildMemory
 from .schemas import (
     ConsentRequest,
     DeleteUserDataRequest,
+    MemorySnapshot,
     StoryGenerationRequest,
     StoryResponse,
     StorySummaryRequest,
@@ -125,6 +126,7 @@ def generate_story_endpoint(
     except Exception as exc:  # pragma: no cover - summariser is optional
         LOGGER.warning("Summary generation failed: %s", exc)
 
+    memory_snapshot: Optional[MemorySnapshot] = None
     if summary_response:
         story_state = StoryState(
             story=story_obj,
@@ -134,6 +136,32 @@ def generate_story_endpoint(
             unresolved_threads=summary_response.unresolved_threads,
         )
         db.add(story_state)
+
+        # Upsert child memory
+        existing_memory: Optional[ChildMemory] = db.query(ChildMemory).filter(ChildMemory.child_id == child.id).one_or_none()
+        if existing_memory is None:
+            existing_memory = ChildMemory(
+                child_id=child.id,
+                characters=summary_response.characters,
+                last_moral=summary_response.moral,
+                unresolved_threads=summary_response.unresolved_threads,
+                sequel_hook=story_payload.suggested_sequel_hook,
+            )
+            db.add(existing_memory)
+        else:
+            # Merge characters uniquely
+            all_chars = set(existing_memory.characters or []) | set(summary_response.characters)
+            existing_memory.characters = sorted(all_chars)
+            existing_memory.last_moral = summary_response.moral
+            existing_memory.unresolved_threads = summary_response.unresolved_threads
+            existing_memory.sequel_hook = story_payload.suggested_sequel_hook
+
+        memory_snapshot = MemorySnapshot(
+            characters=existing_memory.characters or [],
+            moral=existing_memory.last_moral,
+            unresolved_threads=existing_memory.unresolved_threads or [],
+            sequel_hook=existing_memory.sequel_hook,
+        )
 
     db.add(
         UsageMetric(
@@ -159,6 +187,7 @@ def generate_story_endpoint(
         story=story_payload,
         created_at=story_obj.created_at,
         voice=audio_result.voice,
+        memory_snapshot=memory_snapshot,
     )
 
 

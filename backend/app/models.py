@@ -88,6 +88,22 @@ class StoryState(Base):
     story = relationship("Story", back_populates="state", uselist=False)
 
 
+class ChildMemory(Base):
+    """Persistent memory snapshot for a child across stories."""
+
+    __tablename__ = "child_memory"
+
+    child_id = Column(String, ForeignKey("children.id"), primary_key=True)
+    characters = Column(JSON, default=list)  # cumulative distinct character names
+    traits = Column(JSON, default=dict)  # optional map of character -> traits summary
+    last_moral = Column(String, nullable=True)
+    unresolved_threads = Column(JSON, default=list)
+    sequel_hook = Column(Text, nullable=True)
+    updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow, nullable=False)
+
+    child = relationship("Child", backref="memory", uselist=False)
+
+
 class UsageMetric(Base):
     __tablename__ = "usage_metrics"
 
