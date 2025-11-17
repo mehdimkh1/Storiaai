@@ -38,8 +38,8 @@ class Parent(Base):
     email_hash = Column(String, unique=True, index=True, nullable=False)
     is_premium = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=_utcnow, nullable=False)
-
-    children = relationship("Child", back_populates="parent", cascade="all, delete-orphan")
+    # Note: Children are associated to Users in this schema, not Parents.
+    # We keep Parent separate for quota and usage metrics.
 
 
 class Child(Base):

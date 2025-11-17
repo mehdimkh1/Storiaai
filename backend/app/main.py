@@ -72,6 +72,9 @@ def generate_story_endpoint(
     # For now, use a dummy user_id until auth is implemented
     user_id = "dummy_user_id"  # TODO: Replace with actual user ID from auth
 
+    # Identify parent from email for metrics/quota (hashed internally)
+    parent = get_or_create_parent(db, request.parent_email)
+
     # Check quota (simplified for now)
     allowed = True  # TODO: Implement proper quota check with user
     if not allowed:
