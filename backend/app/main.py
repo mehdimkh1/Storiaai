@@ -53,6 +53,17 @@ app.add_middleware(
 )
 
 app.include_router(security, prefix="/auth", tags=["auth"])
+
+@app.get("/")
+def root() -> Dict[str, str]:
+    """Root endpoint: provides a friendly service message instead of 404."""
+
+    return {
+        "service": "StoriaAI Backend",
+        "status": "ok",
+        "docs": "/docs",
+        "health": "/health",
+    }
 @app.get("/health")
 def healthcheck() -> Dict[str, str]:
     """Simple health check endpoint."""
