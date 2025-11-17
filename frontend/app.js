@@ -16,7 +16,8 @@ VANTA.WAVES({
 });
 
 // API Configuration
-const API_BASE = 'http://localhost:8000';
+// Backend base URL (production). If you need to test locally, change to 'http://127.0.0.1:8000'
+const API_BASE = 'https://storiaai-backend.onrender.com';
 
 const VOICE_OPTIONS = {
     it: [
@@ -518,7 +519,7 @@ async function checkAPIHealth() {
             console.log('✅ API is healthy');
         }
     } catch (error) {
-        showError('⚠️ Backend non disponibile. Assicurati che il server sia in esecuzione su localhost:8000');
+        showError('⚠️ Backend non raggiungibile. Riprova tra pochi secondi. Se il problema persiste verifica che il servizio sia online su Render.');
     }
 }
 
