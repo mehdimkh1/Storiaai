@@ -157,6 +157,17 @@ async function generateStory() {
         formData.voice = selectedVoice;
     }
 
+    // Optional new controls: style, tone, educational_topic, generate_panels
+    const styleEl = document.getElementById('style');
+    const toneEl = document.getElementById('tone');
+    const topicEl = document.getElementById('educational-topic');
+    const panelsEl = document.getElementById('generate-panels');
+    if (styleEl && styleEl.value.trim()) formData.style = styleEl.value.trim();
+    if (toneEl && toneEl.value.trim()) formData.tone = toneEl.value.trim();
+    if (topicEl && topicEl.value.trim()) formData.educational_topic = topicEl.value.trim();
+    // Default to true if the checkbox is not present
+    formData.generate_panels = panelsEl ? !!panelsEl.checked : true;
+
     // Show loading
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<span class="btn-text">⏳ Creando magia...</span>';
@@ -280,6 +291,14 @@ function displayStory(data) {
             </div>`;
         }
 
+        // Panel prompts for illustrations
+        if (Array.isArray(story.panel_prompts) && story.panel_prompts.length > 0) {
+            html += `<div class="story-section">
+                <h3>🎨 Idee per le illustrazioni</h3>
+                <ul>${story.panel_prompts.map(p => `<li>${p}</li>`).join('')}</ul>
+            </div>`;
+        }
+
         if (story.suggested_sequel_hook) {
             html += `<div class="story-section">
                 <h3>🔔 Prossima avventura</h3>
@@ -288,6 +307,26 @@ function displayStory(data) {
         }
     } else {
         html = '<p>Storia generata con successo! 🎉</p>';
+    }
+
+    // Memory snapshot section
+    const ms = data.memory_snapshot;
+    if (ms) {
+        const chars = Array.isArray(ms.characters) && ms.characters.length
+            ? `<ul>${ms.characters.map(c => `<li>${c}</li>`).join('')}</ul>`
+            : '<p><em>Nessun personaggio memorizzato</em></p>';
+        const threads = Array.isArray(ms.unresolved_threads) && ms.unresolved_threads.length
+            ? `<ul>${ms.unresolved_threads.map(t => `<li>${t}</li>`).join('')}</ul>`
+            : '<p><em>Nessun filo narrativo aperto</em></p>';
+        html += `<div class="story-section">
+            <h3>🧠 Memoria della storia</h3>
+            <p><strong>Morale recente:</strong> ${ms.moral || '<em>n/d</em>'}</p>
+            <p><strong>Personaggi ricordati:</strong></p>
+            ${chars}
+            <p><strong>Trame da riprendere:</strong></p>
+            ${threads}
+            ${ms.sequel_hook ? `<p><strong>Aggancio futuro:</strong> ${ms.sequel_hook}</p>` : ''}
+        </div>`;
     }
 
     storyContent.innerHTML = html;
@@ -400,7 +439,28 @@ function formatStoryForDownload(data) {
         if (story.branch_2) text += `${story.branch_2}\n\n`;
         if (story.resolution) text += `✨ FINALE\n${story.resolution}\n\n`;
         if (story.moral_summary) text += `💝 LEZIONE\n${story.moral_summary}\n\n`;
+        if (Array.isArray(story.panel_prompts) && story.panel_prompts.length) {
+            text += `🎨 IDEE ILLUSTRAZIONI\n`;
+            story.panel_prompts.forEach(p => text += `  • ${p}\n`);
+            text += '\n';
+        }
         if (story.suggested_sequel_hook) text += `🔔 PROSSIMA AVVENTURA\n${story.suggested_sequel_hook}\n\n`;
+    }
+
+    if (data.memory_snapshot) {
+        const ms = data.memory_snapshot;
+        text += '🧠 MEMORIA\n';
+        if (ms.moral) text += `Morale recente: ${ms.moral}\n`;
+        if (Array.isArray(ms.characters) && ms.characters.length) {
+            text += `Personaggi:\n`;
+            ms.characters.forEach(c => text += `  • ${c}\n`);
+        }
+        if (Array.isArray(ms.unresolved_threads) && ms.unresolved_threads.length) {
+            text += `Trame da riprendere:\n`;
+            ms.unresolved_threads.forEach(t => text += `  • ${t}\n`);
+        }
+        if (ms.sequel_hook) text += `Aggancio futuro: ${ms.sequel_hook}\n`;
+        text += '\n';
     }
 
     text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
