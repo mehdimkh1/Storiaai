@@ -1,0 +1,8 @@
+[build]
+  publish = "frontend"
+
+# SPA-style routing so deep links work
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
