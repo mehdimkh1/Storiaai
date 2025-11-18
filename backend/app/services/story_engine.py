@@ -4,6 +4,8 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
+import random
+import textwrap
 import logging
 from dataclasses import dataclass
 from typing import Dict, Optional
@@ -141,6 +143,138 @@ def _call_openai_story(prompt: str) -> StoryPayload:
         raise RuntimeError("OpenAI returned invalid JSON") from err
 
     return StoryPayload(**payload_dict)
+
+
+def _generate_template_story(request: StoryGenerationRequest, previous_summary: Optional[str]) -> StoryPayload:
+    """Generate a rich bedtime story without external LLMs using heuristics.
+
+    This replaces the old static STUB_STORY. It synthesises dynamic content from
+    child profile, interests, mood, language and stylistic controls. The output
+    strictly matches StoryPayload.
+    """
+
+    lang = request.language
+    name = request.child.name
+    age = request.child.age
+    mood = request.child.mood
+    interests = request.child.interests or ["stelle"]
+    controls = request.controls
+    style = (request.style or "fiaba classica").lower()
+    tone = (request.tone or "calmo").lower()
+    topic = request.educational_topic
+
+    # Pools of narrative assets (Italian focused, but fallback to neutral if not 'it')
+    folklore_chars = ["Pinocchio", "la Fata Azzurra", "Arlecchino", "Pulcinella", "Colombina", "un piccolo drago gentile", "un gufo saggio"]
+    settings_it = ["un bosco di querce argentate", "le calli silenziose di Venezia", "una radura profumata di lavanda", "un antico mulino sulle colline", "una biblioteca segreta sotto una chiesa"]
+    settings_generic = ["a peaceful meadow", "a starlit hill", "a crystal pond", "a curious attic", "a moonlit garden"]
+
+    if lang == "it":
+        setting_pool = settings_it
+    else:
+        setting_pool = settings_generic
+
+    random.seed()  # ensure variability
+    main_setting = random.choice(setting_pool)
+    helper_char = random.choice(folklore_chars)
+    interest_primary = random.choice(interests)
+    interest_secondary = random.choice(interests) if len(interests) > 1 else interest_primary
+
+    # Style modifiers
+    style_prefix_map = {
+        "fiaba classica": "In una dolce atmosfera da fiaba",
+        "avventura": "In un ritmo vivace e avventuroso",
+        "fantascienza": "Tra luci soffuse di tecnologia gentile",
+        "umoristica": "Con un sorriso spontaneo e giochi di parole",
+    }
+    style_prefix = style_prefix_map.get(style, "In una storia serena")
+
+    tone_adjective_map = {
+        "calmo": "tranquilla",
+        "gioioso": "allegra",
+        "riflessivo": "riflessiva",
+        "energico": "vivace",
+    }
+    tone_adj = tone_adjective_map.get(tone, "tranquilla")
+
+    educational_line = "" if not (controls.educational or topic) else (
+        f"Durante l'avventura emergono piccole curiosità su {topic or interest_secondary}. "
+    )
+
+    sequel_line = "" if not previous_summary else (
+        f"Ricordando la precedente avventura ({previous_summary[:120]}), i personaggi riprendono fili gentili della storia. "
+    )
+
+    # Build intro
+    intro = textwrap.fill(
+        (
+            f"{style_prefix}, {name}, {age} anni, si sente {mood}. "
+            f"In {main_setting} incontra {helper_char} che nota il suo interesse per {interest_primary}. "
+            f"La serata è {tone_adj}, piena di calma e scintille creative. "
+            f"{sequel_line}{educational_line}"
+        ),
+        120,
+    )
+
+    # Choices
+    choice_1_prompt = (
+        f"{name} deve scegliere se seguire {helper_char} per esplorare {interest_primary} oppure fermarsi a osservare {interest_secondary}."
+    )
+    choice_1_options = [f"Seguire {helper_char}", f"Osservare {interest_secondary}"]
+
+    branch_1 = textwrap.fill(
+        (
+            f"Seguendo {helper_char}, {name} scopre dettagli nascosti: piccoli segni che parlano di gentilezza e rispetto. "
+            f"Ogni passo rivela un segreto incoraggiante su {interest_primary}."
+        ),
+        120,
+    )
+
+    choice_2_prompt = (
+        f"Più tardi {name} può condividere un pensiero gentile oppure inventare una micro-storia su {interest_secondary}. Cosa farà?"
+    )
+    choice_2_options = ["Condividere un pensiero gentile", f"Inventare storia su {interest_secondary}"]
+
+    branch_2 = textwrap.fill(
+        (
+            f"{name} sceglie un momento creativo e costruisce immagini poetiche che fanno sorridere {helper_char}. "
+            f"L'aria diventa più leggera mentre la fantasia collega {interest_secondary} con sogni futuri."
+        ),
+        120,
+    )
+
+    # Resolution & moral
+    resolution_base = (
+        f"La sera si conclude con un abbraccio simbolico: {name} comprende che la curiosità unita alla gentilezza apre sentieri nuovi. "
+    )
+    if controls.kindness_lesson:
+        moral_summary = "La gentilezza trasforma la curiosità in luce condivisa."
+    else:
+        moral_summary = "La serenità nasce ascoltando il proprio ritmo interiore."
+
+    if controls.no_scary:
+        resolution_extra = "Tutto rimane rassicurante e sereno, pronto per sogni tranquilli."
+    else:
+        resolution_extra = "Anche i piccoli brividi si sciolgono in sicurezza e tenerezza."
+
+    resolution = textwrap.fill(resolution_base + resolution_extra, 120)
+
+    # Sequel hook
+    sequel_target = random.choice(interests)
+    suggested_sequel_hook = f"La prossima volta potrete esplorare un mistero legato a {sequel_target}."
+
+    return StoryPayload(
+        intro=intro,
+        choice_1_prompt=choice_1_prompt,
+        choice_1_options=choice_1_options,
+        branch_1=branch_1,
+        choice_2_prompt=choice_2_prompt,
+        choice_2_options=choice_2_options,
+        branch_2=branch_2,
+        resolution=resolution,
+        moral_summary=moral_summary,
+        suggested_sequel_hook=suggested_sequel_hook,
+        panel_prompts=[],  # derived later if requested
+    )
 
 
 def _call_ollama_story(prompt: str) -> StoryPayload:
@@ -450,14 +584,18 @@ def generate_story(request: StoryGenerationRequest, previous_summary: Optional[s
     Adds optional panel prompt derivation when request.generate_panels is true.
     """
 
-    prompt = build_story_prompt(request, previous_summary)
-    provider = get_llm_provider()
-    if provider == "ollama":
-        story = _call_ollama_story(prompt)
-    elif provider == "huggingface":
-        story = _call_huggingface_story(prompt)
+    # If providers are not configured, use template generator instead of static stub.
+    if SETTINGS.use_stub_providers:
+        story = _generate_template_story(request, previous_summary)
     else:
-        story = _call_openai_story(prompt)
+        prompt = build_story_prompt(request, previous_summary)
+        provider = get_llm_provider()
+        if provider == "ollama":
+            story = _call_ollama_story(prompt)
+        elif provider == "huggingface":
+            story = _call_huggingface_story(prompt)
+        else:
+            story = _call_openai_story(prompt)
     sanitized_story = sanitize_story_text(story, request.controls)
 
     # If provider returned without panel_prompts and generation requested, derive locally.
