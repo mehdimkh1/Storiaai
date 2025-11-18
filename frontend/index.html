@@ -90,6 +90,36 @@
                     <div class="input-glow"></div>
                 </div>
 
+                <div class="form-group floating-label">
+                    <select id="story-style" style="padding: 1.25rem 1rem 0.75rem; font-size: 1rem; color: white; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 15px; width: 100%; outline: none;">
+                        <option value="">Nessuna preferenza</option>
+                        <option value="Magico">✨ Magico</option>
+                        <option value="Educativo">📚 Educativo</option>
+                        <option value="Avventuroso">🗺️ Avventuroso</option>
+                        <option value="Rilassante">🌙 Rilassante</option>
+                    </select>
+                    <label for="story-style">🎨 Stile Storia</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <select id="story-tone" style="padding: 1.25rem 1rem 0.75rem; font-size: 1rem; color: white; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 15px; width: 100%; outline: none;">
+                        <option value="">Nessuna preferenza</option>
+                        <option value="Dolce">💕 Dolce</option>
+                        <option value="Energico">⚡ Energico</option>
+                        <option value="Calmo">🕊️ Calmo</option>
+                        <option value="Divertente">😄 Divertente</option>
+                    </select>
+                    <label for="story-tone">🎭 Tono</label>
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input type="text" id="educational-topic" placeholder="es: amicizia, natura, coraggio...">
+                    <label for="educational-topic">🧠 Tema Educativo (opzionale)</label>
+                    <div class="input-glow"></div>
+                </div>
+
                 <!-- Controls Section -->
                 <div class="controls-section">
                     <h3 class="section-title">⚙️ Impostazioni Storia</h3>
@@ -116,6 +146,12 @@
                             <input type="checkbox" id="educational">
                             <span class="slider"></span>
                             <span class="toggle-label">📚 Contenuto Educativo</span>
+                        </label>
+                        
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="generate-panels">
+                            <span class="slider"></span>
+                            <span class="toggle-label">🎨 Genera Illustrazioni (prompt)</span>
                         </label>
                     </div>
                 </div>

@@ -158,8 +158,8 @@ async function generateStory() {
     }
 
     // Optional new controls: style, tone, educational_topic, generate_panels
-    const styleEl = document.getElementById('style');
-    const toneEl = document.getElementById('tone');
+    const styleEl = document.getElementById('story-style');
+    const toneEl = document.getElementById('story-tone');
     const topicEl = document.getElementById('educational-topic');
     const panelsEl = document.getElementById('generate-panels');
     if (styleEl && styleEl.value.trim()) formData.style = styleEl.value.trim();

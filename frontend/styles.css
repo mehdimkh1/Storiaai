@@ -19,11 +19,13 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     background: var(--bg-dark);
     color: var(--text-light);
     overflow-x: hidden;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* 3D Animated Background */
@@ -151,15 +153,15 @@ body {
 @keyframes pulse {
     0%, 100% { 
         text-shadow: 
-            0 0 10px var(--glow),
-            0 0 20px var(--glow),
-            0 0 30px var(--glow);
+            0 0 8px var(--glow),
+            0 0 16px var(--glow),
+            0 0 24px var(--glow);
     }
     50% { 
         text-shadow: 
-            0 0 20px var(--glow),
-            0 0 40px var(--glow),
-            0 0 60px var(--glow);
+            0 0 12px var(--glow),
+            0 0 24px var(--glow),
+            0 0 36px var(--glow);
     }
 }
 
@@ -176,14 +178,14 @@ body {
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 30px;
-    padding: 3rem;
+    padding: 4rem;
     position: relative;
     overflow: hidden;
     animation: fadeInUp 1s ease-out;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-effect:hover {
@@ -213,7 +215,7 @@ body {
 .story-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .form-group {
@@ -233,7 +235,7 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     outline: none;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .floating-label select {
@@ -245,7 +247,7 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     outline: none;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     appearance: none;
     background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%),
         linear-gradient(135deg, var(--accent) 50%, transparent 50%),
