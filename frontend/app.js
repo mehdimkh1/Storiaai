@@ -1,34 +1,17 @@
-// Initialize 3D Background
-VANTA.WAVES({
-    el: "#vanta-bg",
-    mouseControls: true,
-    touchControls: true,
-    gyroControls: false,
-    minHeight: 200.00,
-    minWidth: 200.00,
-    scale: 1.00,
-    scaleMobile: 1.00,
-    color: 0x1a1a3e,
-    shininess: 40.00,
-    waveHeight: 15.00,
-    waveSpeed: 0.75,
-    zoom: 0.65
-});
-
 // API Configuration
 // Backend base URL (production). If you need to test locally, change to 'http://127.0.0.1:8000'
 const API_BASE = 'https://storiaai-backend.onrender.com';
 
 const VOICE_OPTIONS = {
-    it: [
-        { value: 'it-IT-IsabellaNeural', label: '🇮🇹 Isabella (F)' },
-        { value: 'it-IT-DiegoNeural', label: '🇮🇹 Diego (M)' },
-        { value: 'gtts', label: '🆓 Voce classica (gTTS)' }
-    ],
     en: [
         { value: 'en-GB-LibbyNeural', label: '🇬🇧 Libby (F)' },
         { value: 'en-GB-RyanNeural', label: '🇬🇧 Ryan (M)' },
         { value: 'gtts', label: '🆓 Classic voice (gTTS)' }
+    ],
+    it: [
+        { value: 'it-IT-IsabellaNeural', label: '🇮🇹 Isabella (F)' },
+        { value: 'it-IT-DiegoNeural', label: '🇮🇹 Diego (M)' },
+        { value: 'gtts', label: '🆓 Voce classica (gTTS)' }
     ],
     es: [
         { value: 'es-ES-ElviraNeural', label: '🇪🇸 Elvira (F)' },
@@ -170,7 +153,7 @@ async function generateStory() {
 
     // Show loading
     generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span class="btn-text">⏳ Creando magia...</span>';
+    generateBtn.innerHTML = '<span class="btn-text">Creating story...</span>';
     loadingContainer.style.display = 'block';
     storyCard.style.display = 'none';
 
@@ -185,7 +168,7 @@ async function generateStory() {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Errore nella generazione della storia');
+            throw new Error(error.detail || 'Failed to generate story');
         }
 
         const data = await response.json();
@@ -220,7 +203,7 @@ function displayStory(data) {
         const preview = story.intro.length > 60 ? `${story.intro.substring(0, 57)}...` : story.intro;
         storyTitle.textContent = preview;
     } else {
-        storyTitle.textContent = 'La Tua Storia Magica ✨';
+        storyTitle.textContent = 'Your Magical Story';
     }
 
     // Build story HTML
@@ -230,7 +213,7 @@ function displayStory(data) {
         // Intro
         if (story.intro) {
             html += `<div class="story-section">
-                <h3>📖 L'inizio dell'avventura</h3>
+                <h3>📖 The Adventure Begins</h3>
                 <p>${story.intro}</p>
             </div>`;
         }
@@ -238,7 +221,7 @@ function displayStory(data) {
         // First choice
         if (story.choice_1_prompt) {
             html += `<div class="story-section">
-                <h3>🔮 Prima scelta</h3>
+                <h3>🔮 First Choice</h3>
                 <p><strong>${story.choice_1_prompt}</strong></p>
                 ${story.choice_1_options ? `
                     <ul>
@@ -258,7 +241,7 @@ function displayStory(data) {
         // Second choice
         if (story.choice_2_prompt) {
             html += `<div class="story-section">
-                <h3>🌟 Seconda scelta</h3>
+                <h3>🌟 Second Choice</h3>
                 <p><strong>${story.choice_2_prompt}</strong></p>
                 ${story.choice_2_options ? `
                     <ul>
@@ -278,7 +261,7 @@ function displayStory(data) {
         // Ending
         if (story.resolution) {
             html += `<div class="story-section">
-                <h3>✨ Il finale magico</h3>
+                <h3>✨ The Magical Ending</h3>
                 <p>${story.resolution}</p>
             </div>`;
         }
@@ -286,7 +269,7 @@ function displayStory(data) {
         // Moral lesson
         if (story.moral_summary) {
             html += `<div class="story-section moral-lesson">
-                <h3>💝 La lezione</h3>
+                <h3>💝 The Lesson</h3>
                 <p><em>${story.moral_summary}</em></p>
             </div>`;
         }
@@ -294,19 +277,19 @@ function displayStory(data) {
         // Panel prompts for illustrations
         if (Array.isArray(story.panel_prompts) && story.panel_prompts.length > 0) {
             html += `<div class="story-section">
-                <h3>🎨 Idee per le illustrazioni</h3>
+                <h3>🎨 Illustration Ideas</h3>
                 <ul>${story.panel_prompts.map(p => `<li>${p}</li>`).join('')}</ul>
             </div>`;
         }
 
         if (story.suggested_sequel_hook) {
             html += `<div class="story-section">
-                <h3>🔔 Prossima avventura</h3>
+                <h3>🔔 Next Adventure</h3>
                 <p>${story.suggested_sequel_hook}</p>
             </div>`;
         }
     } else {
-        html = '<p>Storia generata con successo! 🎉</p>';
+        html = '<p>Story generated successfully! 🎉</p>';
     }
 
     // Memory snapshot section
@@ -314,18 +297,18 @@ function displayStory(data) {
     if (ms) {
         const chars = Array.isArray(ms.characters) && ms.characters.length
             ? `<ul>${ms.characters.map(c => `<li>${c}</li>`).join('')}</ul>`
-            : '<p><em>Nessun personaggio memorizzato</em></p>';
+            : '<p><em>No characters stored</em></p>';
         const threads = Array.isArray(ms.unresolved_threads) && ms.unresolved_threads.length
             ? `<ul>${ms.unresolved_threads.map(t => `<li>${t}</li>`).join('')}</ul>`
-            : '<p><em>Nessun filo narrativo aperto</em></p>';
+            : '<p><em>No open narrative threads</em></p>';
         html += `<div class="story-section">
-            <h3>🧠 Memoria della storia</h3>
-            <p><strong>Morale recente:</strong> ${ms.moral || '<em>n/d</em>'}</p>
-            <p><strong>Personaggi ricordati:</strong></p>
+            <h3>🧠 Story Memory</h3>
+            <p><strong>Recent moral:</strong> ${ms.moral || '<em>n/a</em>'}</p>
+            <p><strong>Remembered characters:</strong></p>
             ${chars}
-            <p><strong>Trame da riprendere:</strong></p>
+            <p><strong>Plots to continue:</strong></p>
             ${threads}
-            ${ms.sequel_hook ? `<p><strong>Aggancio futuro:</strong> ${ms.sequel_hook}</p>` : ''}
+            ${ms.sequel_hook ? `<p><strong>Future hook:</strong> ${ms.sequel_hook}</p>` : ''}
         </div>`;
     }
 
@@ -339,7 +322,7 @@ function displayStory(data) {
         }
         if (voiceInfo) {
             const label = getVoiceLabel(data.language || languageSelect.value, data.voice);
-            const voiceText = label ? `Narratore: ${label}` : data.voice ? `Voce: ${data.voice}` : '';
+            const voiceText = label ? `Narrator: ${label}` : data.voice ? `Voice: ${data.voice}` : '';
             voiceInfo.textContent = voiceText;
         }
     } else {
@@ -393,7 +376,7 @@ document.getElementById('download-story').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `storia-${currentStory.story_id}.txt`;
+    a.download = `story-${currentStory.story_id}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -579,7 +562,7 @@ async function checkAPIHealth() {
             console.log('✅ API is healthy');
         }
     } catch (error) {
-        showError('⚠️ Backend non raggiungibile. Riprova tra pochi secondi. Se il problema persiste verifica che il servizio sia online su Render.');
+        showError('⚠️ Backend unavailable. Please try again in a few seconds. If the problem persists, verify the service is online on Render.');
     }
 }
 
